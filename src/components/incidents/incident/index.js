@@ -1,4 +1,5 @@
 import React from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import styled from "styled-components";
 import moment from "moment";
 import ReactMarkdown from "react-markdown";
@@ -54,21 +55,77 @@ const Created = styled.div`
   font-weight: bold;
 `;
 
-export default ({ incident }) => (
-  <Incident active={incident.closed_at}>
-    <Details>
-      <Created>
-        {moment(incident.created_at)
-          .format("MMMM Do YYYY, h:mm a")
-          .toUpperCase()}
-      </Created>
-      <Status active={incident.closed_at}>
-        {incident.closed_at ? "Closed" : "Active"}
-      </Status>
-    </Details>
-    <Title>{incident.title}</Title>
-    <Comment>
-      <ReactMarkdown children={incident.body} />
-    </Comment>
-  </Incident>
-);
+// This function keeps track of the width of an element, with some padding added.
+const useResize = (myRef, padding) => {
+  const getWidth = useCallback(() => myRef?.current?.offsetWidth, [myRef]);
+
+  const [width, setWidth] = useState(undefined);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWidth(getWidth());
+    };
+
+    if (myRef.current) {
+      setWidth(getWidth());
+    }
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [myRef, getWidth]);
+
+  return width && width > padding ? width - padding : width;
+};
+
+
+const MaxWidthMarkdown = ({ maxWidth, children }) => {
+  const components = {
+    // This custom renderer changes how images are rendered; we use it to
+    // constrain the max width of an image to its container.
+    img: ({
+      alt,
+      src,
+      title,
+    }) => (
+      <img
+        alt={alt}
+        src={src}
+        title={title}
+        style={{ maxWidth: maxWidth }}  />
+    ),
+  };
+
+  return (
+    <ReactMarkdown
+      children={children}
+      components={components}
+    />
+  );
+};
+
+export default ({ incident }) => {
+  const containerRef = useRef(null);
+  const maxWidth = useResize(containerRef, 0 /* padding */);
+
+  return (
+    <Incident active={incident.closed_at}>
+      <Details>
+        <Created>
+          {moment(incident.created_at)
+            .format("MMMM Do YYYY, h:mm a")
+            .toUpperCase()}
+        </Created>
+        <Status active={incident.closed_at}>
+          {incident.closed_at ? "Closed" : "Active"}
+        </Status>
+      </Details>
+      <Title>{incident.title}</Title>
+      <Comment ref={containerRef}>
+        <MaxWidthMarkdown maxWidth={maxWidth} children={incident.body} />
+      </Comment>
+    </Incident>
+  );
+};
