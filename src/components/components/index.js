@@ -6,9 +6,12 @@ import useDidMount from "../useDidMount";
 export default ({ loading, components }) => {
   const [hasMounted] = useDidMount();
 
+  // Copy and sort by the GitHub issue title
+  const sorted = components.slice().sort((a, b) => a.title.localeCompare(b.title))
+
   return !loading || hasMounted ? (
-    components?.length > 0 ? (
-      components?.map((component) => (
+    sorted?.length > 0 ? (
+      sorted?.map((component) => (
         <Component key={component.id} component={component} />
       ))
     ) : (
