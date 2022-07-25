@@ -12,14 +12,15 @@ const Logo = styled.img`
   max-height: 100px;
 `;
 
-const Header = styled.div`
+const Header = styled.a`
   text-align: center;
   margin-bottom: 16px;
+  display: block;
 `;
 
 export default () =>
   process.env.REACT_APP_LOGO || process.env.REACT_APP_NAME ? (
-    <Header>
+    <Header href={process.env.REACT_APP_LINK || "#"}>
       {process.env.REACT_APP_LOGO ? (
         <Logo
           src={process.env.REACT_APP_LOGO}
