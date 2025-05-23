@@ -35,8 +35,10 @@ const Title = styled.div`
 `;
 
 const Comment = styled.div`
-  white-space: break-spaces;
   color: #1e1e1e;
+  p {
+    white-space: break-spaces;
+  }
 `;
 
 const Status = styled.div`
